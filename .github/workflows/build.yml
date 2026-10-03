@@ -19,12 +19,19 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/ggml-org/whisper.cpp
           cd whisper.cpp
+          printf '#include <windows.h>\n#define SetThreadInformation(a,b,c,d) ((BOOL)1)\n' > win7shim.h
+          SHIM="$(cygpath -m "$PWD")/win7shim.h"
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF \
             -DGGML_AVX=OFF -DGGML_AVX2=OFF -DGGML_FMA=OFF \
             -DGGML_F16C=OFF -DGGML_OPENMP=OFF \
+            -DCMAKE_C_FLAGS="-include $SHIM" \
+            -DCMAKE_CXX_FLAGS="-include $SHIM" \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
           cmake --build build -j
+      - name: Check Win8+ imports
+        run: |
+          objdump -p whisper.cpp/build/bin/whisper-cli.exe | grep -iE "SetThreadInformation|PreciseAsFileTime|WaitOnAddress|PrefetchVirtualMemory|SetThreadDescription" || echo "no Win8+ imports found"
       - uses: actions/upload-artifact@v4
         with:
           name: whisper-noavx
