@@ -1,0 +1,31 @@
+name: build-noavx
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            git
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+      - name: Build
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/whisper.cpp
+          cd whisper.cpp
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF \
+            -DGGML_AVX=OFF -DGGML_AVX2=OFF -DGGML_FMA=OFF \
+            -DGGML_F16C=OFF -DGGML_OPENMP=OFF \
+            -DCMAKE_EXE_LINKER_FLAGS="-static"
+          cmake --build build -j
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whisper-noavx
+          path: whisper.cpp/build/bin/*.exe
