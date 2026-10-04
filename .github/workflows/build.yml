@@ -24,7 +24,7 @@ jobs:
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF \
             -DGGML_AVX=OFF -DGGML_AVX2=OFF -DGGML_FMA=OFF \
-            -DGGML_F16C=OFF -DGGML_OPENMP=OFF \
+            -DGGML_F16C=OFF -DGGML_SSE42=OFF -DGGML_BMI2=OFF -DGGML_OPENMP=OFF \
             -DCMAKE_C_FLAGS="-include $SHIM" \
             -DCMAKE_CXX_FLAGS="-include $SHIM" \
             -DCMAKE_EXE_LINKER_FLAGS="-static"
